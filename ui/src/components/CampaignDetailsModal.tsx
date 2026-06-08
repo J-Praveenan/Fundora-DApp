@@ -10,19 +10,10 @@ import {
   HandCoins,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { CampaignStatus } from "@/utils/campaignDatum";
+import { Campaign } from "@/utils/decodeCampaignDatum";
 
-export type Campaign = {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  creator: string;
-  goal: number;
-  raised: number;
-  deadline: string;
-  image: string;
-  status: "Active" | "Completed" | "Failed";
-};
+
 
 type CampaignDetailsModalProps = {
   campaign: Campaign | null;
@@ -58,10 +49,6 @@ export default function CampaignDetailsModal({
               alt={campaign.title}
               className="h-full w-full object-cover"
             />
-
-            <div className="absolute left-4 top-4 rounded-full bg-emerald-400 px-4 py-1 text-xs font-bold text-slate-950">
-              {campaign.category}
-            </div>
           </div>
 
           <div className="p-6 md:p-8">
