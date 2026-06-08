@@ -42,3 +42,25 @@ export function createCampaignDatum(
         statusToDatum(status)
     ]);
 }
+
+export function createUpdatedCampaignDatum(
+  creatorPubKeyHash: string,
+  title: string,
+  description: string,
+  imageUrl: string,
+  targetAmount: number,
+  raisedAmount: number,
+  deadline: number,
+  status: CampaignStatus
+) {
+  return createCampaignDatum(
+    creatorPubKeyHash,
+    title,
+    description,
+    imageUrl,
+    targetAmount,
+    raisedAmount,
+    deadline,
+    status
+  );
+}

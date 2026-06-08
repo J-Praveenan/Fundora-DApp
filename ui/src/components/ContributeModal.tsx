@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { X, HandCoins, Wallet, Target, Info } from "lucide-react";
 import { motion } from "framer-motion";
-import { Campaign } from "./CampaignDetailsModal";
+import { Campaign } from "@/utils/decodeCampaignDatum";
+import { useWallet } from "@meshsdk/react";
+import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
+import { mConStr0 } from "@meshsdk/core";
+import { txBuilder } from "@/config/mesh";
+import { script, scriptAddress } from "@/config/contract";
 
 type ContributeModalProps = {
   campaign: Campaign | null;
@@ -15,10 +20,122 @@ export default function ContributeModal({
   onClose,
 }: ContributeModalProps) {
   const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [txHash, setTxHash] = useState("");
+
+  const { connected, wallet } = useWallet();
 
   if (!campaign) return null;
 
   const progress = Math.min((campaign.raised / campaign.goal) * 100, 100);
+
+  const getLovelaceFromCampaignUtxo = async () => {
+    if (!campaign) return 0;
+
+    const utxos = await wallet.getUtxos();
+
+    return utxos;
+  };
+
+  const handleContribute = async () => {
+    if (!campaign) return;
+
+    if (!connected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      alert("Please enter valid ADA amount");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setTxHash("");
+
+      const contributionLovelace = Number(amount) * 1_000_000;
+
+      const utxos = await wallet.getUtxos();
+      const collateral = await wallet.getCollateral();
+      const changeAddress = await wallet.getChangeAddress();
+
+      if (!collateral || collateral.length === 0) {
+        alert("Collateral not found. Please enable collateral in your wallet.");
+        return;
+      }
+
+      const oldRaisedLovelace = campaign.raised * 1_000_000;
+      const targetLovelace = campaign.goal * 1_000_000;
+      const newRaisedLovelace = oldRaisedLovelace + contributionLovelace;
+
+      const newStatus =
+        newRaisedLovelace >= targetLovelace
+          ? CampaignStatus.Successful
+          : CampaignStatus.Active;
+
+      const newDatum = createCampaignDatum(
+        campaign.creator,
+        campaign.title,
+        campaign.description,
+        campaign.image,
+        targetLovelace,
+        newRaisedLovelace,
+        new Date(campaign.deadline).getTime(),
+        newStatus
+      );
+
+      const redeemer = mConStr0([contributionLovelace]);
+
+      const oldScriptAmount = campaign.raised * 1_000_000 + 5_000_000;
+      const newScriptAmount = oldScriptAmount + contributionLovelace;
+
+      const unsignedTx = await txBuilder
+        .spendingPlutusScript("V3")
+        .txIn(
+          campaign.txHash,
+          campaign.outputIndex,
+          [
+            {
+              unit: "lovelace",
+              quantity: oldScriptAmount.toString(),
+            },
+          ],
+          scriptAddress
+        )
+        .txInInlineDatumPresent()
+        .txInRedeemerValue(redeemer)
+        .txInScript(script.code)
+        .txOut(scriptAddress, [
+          {
+            unit: "lovelace",
+            quantity: newScriptAmount.toString(),
+          },
+        ])
+        .txOutInlineDatumValue(newDatum)
+        .txInCollateral(
+          collateral[0].input.txHash,
+          collateral[0].input.outputIndex,
+          collateral[0].output.amount,
+          collateral[0].output.address
+        )
+        .changeAddress(changeAddress)
+        .selectUtxosFrom(utxos)
+        .complete();
+
+      const signedTx = await wallet.signTx(unsignedTx, true);
+      const submittedTxHash = await wallet.submitTx(signedTx);
+
+      setTxHash(submittedTxHash);
+      alert("Contribution successful!");
+    } catch (error) {
+      console.error("Contribution failed:", error);
+      alert("Contribution failed. Check console.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4 py-5 backdrop-blur-sm">
@@ -118,11 +235,18 @@ export default function ContributeModal({
 
           <button
             type="button"
+            onClick={handleContribute}
+            disabled={loading}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-6 py-4 font-bold text-slate-950 transition hover:scale-[1.02]"
           >
             <HandCoins size={20} />
-            Confirm Contribution
+             {loading ? "Contributing..." : "Confirm Contribution"}
           </button>
+          {txHash && (
+            <p className="mt-3 break-all rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs text-emerald-300">
+              Transaction Hash: {txHash}
+            </p>
+          )}
         </form>
       </motion.div>
     </div>
