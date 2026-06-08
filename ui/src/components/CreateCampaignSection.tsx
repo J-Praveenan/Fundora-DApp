@@ -12,6 +12,11 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useWallet } from "@meshsdk/react";
+import { resolvePaymentKeyHash } from "@meshsdk/core";
+import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
+import { txBuilder } from "@/config/mesh";
+import { scriptAddress } from "@/config/contract";
 
 
 export default function CreateCampaignSection() {
@@ -25,10 +30,107 @@ export default function CreateCampaignSection() {
     deadline: "",
   });
 
+  const{connected, wallet} = useWallet();
+  const [loading, setLoading] = useState(false);
+  const[txHash, setTxHash] = useState("");
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setPreviewImage(URL.createObjectURL(file));
+
+    if (file) {
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
   };
+
+  const uploadImageToIPFS = async () => {
+    if (!selectedImage) {
+      throw new Error("Please upload campaign image");
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedImage);
+
+    const response = await fetch("/api/upload-to-ipfs", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Image upload failed");
+    }
+
+    setImageUrl(data.imageUrl);
+    return data.imageUrl;
+  };
+
+  const handleCreateCampaign  = async () => {
+    if(!connected){
+      alert("Caonnect your wallet first");
+      return;
+    }
+
+    if(!formData.title || !formData.description || !formData.goal || !formData.deadline){
+      alert("Please fill all required fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setTxHash("");
+
+      const utxos = await wallet.getUtxos();
+      const changeAddress = await wallet.getChangeAddress();
+
+      const creatorPubKeyHash = resolvePaymentKeyHash(changeAddress);
+
+      const targetAmount = Number(formData.goal) * 1000000;
+      const deadlineTimestamp = new Date(formData.deadline).getTime();
+
+      const uploadedImageUrl = await uploadImageToIPFS();
+
+      const datum = createCampaignDatum(
+        creatorPubKeyHash,
+        formData.title,
+        formData.description,
+        uploadedImageUrl,
+        targetAmount,
+        0,
+        deadlineTimestamp,
+        CampaignStatus.Active,
+      );
+
+      const unsignedTx = await txBuilder
+        .txOut(
+          scriptAddress,[{
+            unit: "lovelace",
+            quantity: "5000000"
+          }]
+        )
+        .txOutInlineDatumValue(datum)
+        .changeAddress(changeAddress)
+        .selectUtxosFrom(utxos)
+        .complete();
+      
+      const signedTx = await wallet.signTx(unsignedTx);
+      const txHash = await wallet.submitTx(signedTx);
+
+      setTxHash(txHash);
+
+      alert("Compaign created successfully.");
+    } catch (error) {
+      console.log("Error in creating campaign: ", error);
+      alert("Error in creating campign");
+    }finally{
+      setLoading(false);
+    }
+
+  }
 
   return (
     <section id="create" className="relative bg-slate-950 py-24">
@@ -198,10 +300,16 @@ export default function CreateCampaignSection() {
                 <button
                   type="button"
                   className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-6 py-3 text-base font-bold text-slate-950 transition hover:scale-[1.02]"
+                  onClick={handleCreateCampaign}
                 >
                   <Rocket size={19} />
-                  Create Campaign
+                  {loading ? "Creating Campaign..." : "Create Campaign"}
                 </button>
+                {txHash && (
+                  <p className="mt-3 break-all rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs text-emerald-300">
+                    Transaction Hash: {txHash}
+                  </p>
+                )}
               </div>
             </form>
           </motion.div>

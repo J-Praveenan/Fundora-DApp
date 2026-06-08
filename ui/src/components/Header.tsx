@@ -59,7 +59,7 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex">
-          <CardanoWallet label="Connect Wallet" isDark={true} persist={true} />
+          <CardanoWallet label="Connect Wallet" isDark={false} persist={true} />
         </div>
 
         <button
@@ -93,7 +93,7 @@ export default function Header() {
           <div className="mt-5">
             <CardanoWallet
               label="Connect Wallet"
-              isDark={true}
+              isDark={false}
               persist={true}
             />
           </div>
