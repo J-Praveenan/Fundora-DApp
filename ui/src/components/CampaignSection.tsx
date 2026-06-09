@@ -20,19 +20,21 @@ import {
   decodeCampaignDatum,
   Campaign,
 } from "@/utils/decodeCampaignDatum";
+import WithdrawModal from "./WithdrawModal";
+import { resolveDataHash } from "@meshsdk/core";
 
 const ITEMS_PER_PAGE = 3;
 
 export default function CampaignSection() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [selectedCampaign, setSelectedCampaign] =
-    useState<Campaign | null>(null);
-  const [contributeCampaign, setContributeCampaign] =
-    useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [contributeCampaign, setContributeCampaign] = useState<Campaign | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [withdrawCampaign, setWithdrawCampaign] = useState<Campaign | null>(null);
 
   const totalPages = Math.ceil(campaigns.length / ITEMS_PER_PAGE);
 
@@ -54,6 +56,8 @@ export default function CampaignSection() {
         .filter((campaign): campaign is Campaign => campaign !== null);
 
       setCampaigns(decodedCampaigns);
+
+      console.log("Compaign Details: ", decodedCampaigns);
     } catch (error) {
       console.error("Failed to fetch campaigns:", error);
     } finally {
@@ -229,6 +233,14 @@ export default function CampaignSection() {
                           Details
                         </button>
                       </div>
+                      {campaign.status === "Successful" && (
+                        <button
+                          onClick={() => setWithdrawCampaign(campaign)}
+                          className="mt-3 w-full rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-bold text-emerald-300 transition hover:bg-emerald-400/20"
+                        >
+                          Withdraw
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 );
@@ -278,6 +290,11 @@ export default function CampaignSection() {
       <ContributeModal
         campaign={contributeCampaign}
         onClose={() => setContributeCampaign(null)}
+      />
+
+      <WithdrawModal
+        campaign={withdrawCampaign}
+        onClose={() => setWithdrawCampaign(null)}
       />
     </section>
   );

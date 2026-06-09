@@ -16,15 +16,25 @@ export type Campaign = {
     outputIndex: number;
 }
 
-export function datumStatusToString(status: any): CampaignStatus{
-    const constructor = status?.constructor ?? status?.alternative ?? 0;
+function datumStatusToString(status: any): CampaignStatus {
+  console.log("Raw status datum:", status);
 
-    if(constructor === 0) return "Active";
-    if(constructor === 1) return "Successful";
-    if(constructor === 2) return "Failed";
-    if(constructor === 3) return "Withdrawn";
+  const rawConstructor =
+    status?.constructor ??
+    status?.alternative ??
+    status?.index ??
+    status?.constructorIndex ??
+    status?.constr ??
+    0;
 
-    return "Active";
+  const constructorIndex = Number(rawConstructor);
+
+  if (constructorIndex === 0) return "Active";
+  if (constructorIndex === 1) return "Successful";
+  if (constructorIndex === 2) return "Failed";
+  if (constructorIndex === 3) return "Withdrawn";
+
+  return "Active";
 }
 
 export function decodeCampaignDatum(utxo: any): Campaign | null{
@@ -40,6 +50,11 @@ export function decodeCampaignDatum(utxo: any): Campaign | null{
 
         const fields = datum.fields;
         if(!fields) return null;
+
+        console.log('Fields: ', fields);
+
+        const goal = Number(fields[4].int) / 1_000_000;
+        const raised = Number(fields[5].int) / 1_000_000;
 
         return {
             id: `${utxo.input.txHash}#${utxo.input.outputIndex}`,
