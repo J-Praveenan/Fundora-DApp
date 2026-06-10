@@ -7,6 +7,7 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import CampaignSection from "@/components/CampaignSection";
 import CreateCampaignSection from "@/components/CreateCampaignSection";
+import MyCampaignsSection from "@/components/MyCampaignsSection";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <HeroSection/>
       <CampaignSection/>
       <CreateCampaignSection/>
+      <MyCampaignsSection/>
       <FeaturesSection/>
       <HowItWorksSection/>
       <Footer/>

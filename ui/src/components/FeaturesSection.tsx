@@ -119,28 +119,6 @@ export default function FeaturesSection() {
             );
           })}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="mt-20 rounded-3xl border border-emerald-400/20 bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 p-10 text-center backdrop-blur-xl"
-        >
-          <h3 className="text-3xl font-black text-white">
-            Built With MeshJS + Aiken
-          </h3>
-
-          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-400">
-            Fundora integrates MeshJS wallet transactions with powerful Aiken
-            smart contracts to provide secure crowdfunding functionality on the
-            Cardano blockchain.
-          </p>
-
-          <button className="mt-8 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-8 py-4 text-lg font-semibold text-slate-950 transition hover:scale-105">
-            Launch Your Campaign
-          </button>
-        </motion.div>
       </div>
     </section>
   );

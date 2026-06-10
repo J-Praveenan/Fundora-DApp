@@ -117,18 +117,6 @@ export default function HowItWorksSection() {
             );
           })}
         </div>
-
-        <div className="mt-16 rounded-3xl border border-emerald-400/20 bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 p-8 text-center backdrop-blur-xl">
-          <h3 className="text-2xl font-bold text-white">
-            Powered by Cardano Preprod Network
-          </h3>
-
-          <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-slate-400">
-            This DApp is designed to interact with your Aiken crowdfunding smart
-            contract using MeshJS transaction building, wallet connection,
-            script UTXOs, datum, and redeemer validation.
-          </p>
-        </div>
       </div>
     </section>
   );

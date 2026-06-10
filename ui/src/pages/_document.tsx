@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <link rel="icon" href="https://meshjs.dev/favicon/favicon-32x32.png" />
+        <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQE19lz6-iL6_xnKgSyD_0hwFDZvrzfMklwvQ&s" />
       </Head>
       <body>
         <Main />

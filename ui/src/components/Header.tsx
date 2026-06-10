@@ -11,12 +11,14 @@ import {
   Layers3,
   ShieldCheck,
   PlusCircle,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
   { name: "Home", href: "#home", icon: LayoutDashboard },
   { name: "Campaigns", href: "#campaigns", icon: Rocket },
+  { name: "My Campaigns", href: "#my-campaigns", icon: Wallet },
   { name: "Create Campaign", href: "#create", icon: PlusCircle },
   { name: "How It Works", href: "#how-it-works", icon: Layers3 },
   { name: "Features", href: "#features", icon: ShieldCheck },

@@ -58,7 +58,12 @@ export default function HeroSection() {
           transition={{ duration: 1.1 }}
           className="mt-10 flex flex-col gap-4 sm:flex-row"
         >
-          <button className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-8 py-4 text-lg font-semibold text-slate-950 transition hover:scale-105">
+          <button onClick={() => {
+              document
+                .getElementById("create")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-8 py-4 text-lg font-semibold text-slate-950 transition hover:scale-105">
             Start Campaign
             <ArrowRight
               size={20}
@@ -66,7 +71,13 @@ export default function HeroSection() {
             />
           </button>
 
-          <button className="rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-lg font-semibold text-white transition hover:border-emerald-400/30 hover:bg-emerald-400/10">
+          <button 
+            onClick={() => {
+              document
+                .getElementById("campaigns")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-lg font-semibold text-white transition hover:border-emerald-400/30 hover:bg-emerald-400/10">
             Explore Campaigns
           </button>
         </motion.div>
