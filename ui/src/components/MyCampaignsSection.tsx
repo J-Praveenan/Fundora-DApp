@@ -19,6 +19,11 @@ import {
   Campaign,
   decodeCampaignDatum,
 } from "@/utils/decodeCampaignDatum";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "@/utils/toast";
 
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import ContributeModal from "./ContributeModal";
@@ -40,7 +45,7 @@ export default function MyCampaignsSection() {
 
   const fetchMyCampaigns = async () => {
     if (!connected) {
-      alert("Please connect your wallet first");
+      showWarningToast("Please connect your wallet first");
       return;
     }
 
@@ -64,7 +69,7 @@ export default function MyCampaignsSection() {
       setCampaigns(myCampaigns);
     } catch (error) {
       console.error("Failed to fetch my campaigns:", error);
-      alert("Failed to load your campaigns");
+      showErrorToast("Failed to load your campaigns");
     } finally {
       setLoading(false);
     }

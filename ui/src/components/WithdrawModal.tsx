@@ -9,6 +9,11 @@ import { mConStr1, MeshTxBuilder } from "@meshsdk/core";
 import { Campaign } from "@/utils/decodeCampaignDatum";
 import { script, scriptAddress } from "@/config/contract";
 import { provider } from "@/config/mesh";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "@/utils/toast";
 
 type Props = {
   campaign: Campaign | null;
@@ -24,7 +29,7 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
 
   const handleWithdraw = async () => {
     if (!connected) {
-      alert("Please connect your wallet first");
+      showWarningToast("Please connect your wallet first");
       return;
     }
 
@@ -37,7 +42,7 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
       const changeAddress = await wallet.getChangeAddress();
 
       if (!collateral || collateral.length === 0) {
-        alert("Collateral not found. Please enable collateral in your wallet.");
+        showWarningToast("Collateral not found. Please enable collateral in your wallet.");
         return;
       }
 
@@ -94,10 +99,10 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
       const submittedTxHash = await wallet.submitTx(signedTx);
 
       setTxHash(submittedTxHash);
-      alert("Withdraw successful!");
+      showSuccessToast("Withdraw successful!");
     } catch (error) {
       console.error("Withdraw failed:", error);
-      alert("Withdraw failed. Check console.");
+      showErrorToast("Withdraw failed. Check console.");
     } finally {
       setLoading(false);
     }

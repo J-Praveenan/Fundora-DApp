@@ -17,6 +17,11 @@ import { resolvePaymentKeyHash } from "@meshsdk/core";
 import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
 import { txBuilder } from "@/config/mesh";
 import { scriptAddress } from "@/config/contract";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "@/utils/toast";
 
 
 export default function CreateCampaignSection() {
@@ -71,12 +76,12 @@ export default function CreateCampaignSection() {
 
   const handleCreateCampaign  = async () => {
     if(!connected){
-      alert("Caonnect your wallet first");
+      showWarningToast("Caonnect your wallet first");
       return;
     }
 
     if(!formData.title || !formData.description || !formData.goal || !formData.deadline){
-      alert("Please fill all required fields.");
+      showWarningToast("Please fill all required fields.");
       return;
     }
 
@@ -122,10 +127,10 @@ export default function CreateCampaignSection() {
 
       setTxHash(txHash);
 
-      alert("Compaign created successfully.");
+      showSuccessToast("Compaign created successfully.");
     } catch (error) {
       console.log("Error in creating campaign: ", error);
-      alert("Error in creating campign");
+      showErrorToast("Error in creating campign");
     }finally{
       setLoading(false);
     }

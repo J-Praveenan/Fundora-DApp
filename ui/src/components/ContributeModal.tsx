@@ -9,6 +9,11 @@ import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
 import { mConStr0 } from "@meshsdk/core";
 import { txBuilder } from "@/config/mesh";
 import { script, scriptAddress } from "@/config/contract";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "@/utils/toast";
 
 type ContributeModalProps = {
   campaign: Campaign | null;
@@ -41,12 +46,12 @@ export default function ContributeModal({
     if (!campaign) return;
 
     if (!connected) {
-      alert("Please connect your wallet first");
+      showWarningToast("Please connect your wallet first");
       return;
     }
 
     if (!amount || Number(amount) <= 0) {
-      alert("Please enter valid ADA amount");
+      showWarningToast("Please enter valid ADA amount");
       return;
     }
 
@@ -61,7 +66,7 @@ export default function ContributeModal({
       const changeAddress = await wallet.getChangeAddress();
 
       if (!collateral || collateral.length === 0) {
-        alert("Collateral not found. Please enable collateral in your wallet.");
+        showWarningToast("Collateral not found. Please enable collateral in your wallet.");
         return;
       }
 
@@ -127,10 +132,10 @@ export default function ContributeModal({
       const submittedTxHash = await wallet.submitTx(signedTx);
 
       setTxHash(submittedTxHash);
-      alert("Contribution successful!");
+      showSuccessToast("Contribution successful!");
     } catch (error) {
       console.error("Contribution failed:", error);
-      alert("Contribution failed. Check console.");
+      showErrorToast("Contribution failed. Check console.");
     } finally {
       setLoading(false);
     }
