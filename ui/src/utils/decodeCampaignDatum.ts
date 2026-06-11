@@ -3,22 +3,21 @@ import { deserializeDatum, hexToString } from "@meshsdk/core";
 export type CampaignStatus = "Active" | "Successful" | "Failed" | "Withdrawn";
 
 export type Campaign = {
-    id: string;
-    creator: string;
-    title: string;
-    description: string;
-    image: string;
-    goal: number;
-    raised: number;
-    deadline: string;
-    status: CampaignStatus;
-    txHash: string;
-    outputIndex: number;
-}
+  id: string;
+  campaignId: string;
+  creator: string;
+  title: string;
+  description: string;
+  image: string;
+  goal: number;
+  raised: number;
+  deadline: string;
+  status: CampaignStatus;
+  txHash: string;
+  outputIndex: number;
+};
 
 function datumStatusToString(status: any): CampaignStatus {
-  console.log("Raw status datum:", status);
-
   const rawConstructor =
     status?.constructor ??
     status?.alternative ??
@@ -37,42 +36,36 @@ function datumStatusToString(status: any): CampaignStatus {
   return "Active";
 }
 
-export function decodeCampaignDatum(utxo: any): Campaign | null{
-    try {
-        const plutusData = 
-            utxo.output?.plutusData || 
-            utxo.output?.dataHash || 
-            utxo.output?.inlineDatum;
+export function decodeCampaignDatum(utxo: any): Campaign | null {
+  try {
+    if (!utxo.output?.plutusData) return null;
 
-        if(!utxo.output?.plutusData) return null;
+    const datum: any = deserializeDatum(utxo.output.plutusData);
+    const fields = datum.fields;
 
-        const datum: any = deserializeDatum(utxo.output?.plutusData);
+    // CampaignDatum has 9 fields.
+    // ContributionDatum has only 3 fields, so ignore it here.
+    if (!fields || fields.length !== 9) return null;
 
-        const fields = datum.fields;
-        if(!fields) return null;
+    const goal = Number(fields[5].int) / 1_000_000;
+    const raised = Number(fields[6].int) / 1_000_000;
 
-        console.log('Fields: ', fields);
-
-        const goal = Number(fields[4].int) / 1_000_000;
-        const raised = Number(fields[5].int) / 1_000_000;
-
-        return {
-            id: `${utxo.input.txHash}#${utxo.input.outputIndex}`,
-            creator: fields[0].bytes,
-            title: hexToString(fields[1].bytes),
-            description: hexToString(fields[2].bytes),
-            image: hexToString(fields[3].bytes),
-            goal: Number(fields[4].int) / 1000000,
-            raised: Number(fields[5].int) / 1000000,
-            deadline: new Date(Number(fields[6].int)).toISOString().split("T")[0],
-            status: datumStatusToString(fields[7]),
-            txHash: utxo.input.txHash,
-            outputIndex: utxo.input.outputIndex,
-        };
-
-        
-    } catch (error) {
-        console.error("Failed to decode campaign datum:", error);
-        return null;
-    }
+    return {
+      id: `${utxo.input.txHash}#${utxo.input.outputIndex}`,
+      campaignId: hexToString(fields[0].bytes),
+      creator: fields[1].bytes,
+      title: hexToString(fields[2].bytes),
+      description: hexToString(fields[3].bytes),
+      image: hexToString(fields[4].bytes),
+      goal,
+      raised,
+      deadline: new Date(Number(fields[7].int)).toISOString().split("T")[0],
+      status: datumStatusToString(fields[8]),
+      txHash: utxo.input.txHash,
+      outputIndex: utxo.input.outputIndex,
+    };
+  } catch (error) {
+    console.error("Failed to decode campaign datum:", error);
+    return null;
+  }
 }

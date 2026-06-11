@@ -21,7 +21,6 @@ import {
   Campaign,
 } from "@/utils/decodeCampaignDatum";
 import WithdrawModal from "./WithdrawModal";
-import { resolveDataHash } from "@meshsdk/core";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -142,7 +141,7 @@ export default function CampaignSection() {
 
                 return (
                   <motion.div
-                    key={campaign.id}
+                    key={campaign.campaignId}
                     initial={{ opacity: 0, y: 35 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}

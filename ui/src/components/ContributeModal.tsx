@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Campaign } from "@/utils/decodeCampaignDatum";
 import { useWallet } from "@meshsdk/react";
 import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
-import { mConStr0 } from "@meshsdk/core";
+import { mConStr0, deserializeAddress  } from "@meshsdk/core";
 import { txBuilder } from "@/config/mesh";
 import { script, scriptAddress } from "@/config/contract";
 import {
@@ -14,6 +14,7 @@ import {
   showSuccessToast,
   showWarningToast,
 } from "@/utils/toast";
+import { createContributionDatum } from "@/utils/contributionDatum";
 
 type ContributeModalProps = {
   campaign: Campaign | null;
@@ -33,14 +34,6 @@ export default function ContributeModal({
   if (!campaign) return null;
 
   const progress = Math.min((campaign.raised / campaign.goal) * 100, 100);
-
-  const getLovelaceFromCampaignUtxo = async () => {
-    if (!campaign) return 0;
-
-    const utxos = await wallet.getUtxos();
-
-    return utxos;
-  };
 
   const handleContribute = async () => {
     if (!campaign) return;
@@ -65,6 +58,14 @@ export default function ContributeModal({
       const collateral = await wallet.getCollateral();
       const changeAddress = await wallet.getChangeAddress();
 
+      const contributorPubKeyHash = deserializeAddress(changeAddress).pubKeyHash;
+
+      const contributionDatum = createContributionDatum(
+        campaign.campaignId,
+        contributorPubKeyHash,
+        contributionLovelace
+      );
+
       if (!collateral || collateral.length === 0) {
         showWarningToast("Collateral not found. Please enable collateral in your wallet.");
         return;
@@ -79,7 +80,9 @@ export default function ContributeModal({
           ? CampaignStatus.Successful
           : CampaignStatus.Active;
 
+
       const newDatum = createCampaignDatum(
+        campaign.campaignId,
         campaign.creator,
         campaign.title,
         campaign.description,
@@ -111,6 +114,8 @@ export default function ContributeModal({
         .txInInlineDatumPresent()
         .txInRedeemerValue(redeemer)
         .txInScript(script.code)
+
+        // Updated campaign UTXO
         .txOut(scriptAddress, [
           {
             unit: "lovelace",
@@ -118,6 +123,16 @@ export default function ContributeModal({
           },
         ])
         .txOutInlineDatumValue(newDatum)
+
+        // Contributor record UTXO
+        .txOut(scriptAddress, [
+          {
+            unit: "lovelace",
+            quantity: "5000000",
+          },
+        ])
+        .txOutInlineDatumValue(contributionDatum)
+
         .txInCollateral(
           collateral[0].input.txHash,
           collateral[0].input.outputIndex,

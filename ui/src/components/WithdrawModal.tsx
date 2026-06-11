@@ -60,6 +60,13 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
         verbose: true,
       });
 
+      const deadlineTime = new Date(campaign.deadline).getTime();
+
+      if (Date.now() < deadlineTime) {
+        showWarningToast("You can withdraw only after the campaign deadline.");
+        return;
+      }
+
 
       const unsignedTx = await txBuilder
         .spendingPlutusScript("V3")
@@ -90,7 +97,6 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
           collateral[0].output.address
         )
         .requiredSignerHash(campaign.creator)
-        // .invalidBefore(Number(new Date(campaign.deadline).getTime()))
         .changeAddress(changeAddress)
         .selectUtxosFrom(utxos)
         .complete();

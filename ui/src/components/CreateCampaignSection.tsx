@@ -99,7 +99,10 @@ export default function CreateCampaignSection() {
 
       const uploadedImageUrl = await uploadImageToIPFS();
 
+      const campaignId = `campaign-${Date.now()}`;
+
       const datum = createCampaignDatum(
+        campaignId,
         creatorPubKeyHash,
         formData.title,
         formData.description,

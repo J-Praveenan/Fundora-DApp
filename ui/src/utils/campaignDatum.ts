@@ -22,6 +22,7 @@ export function statusToDatum(status: CampaignStatus){
 
 
 export function createCampaignDatum(
+    campaignId: string,
     creatorPubKeyHash: string,
     title: string,
     description: string,
@@ -32,6 +33,7 @@ export function createCampaignDatum(
     status: CampaignStatus,
 ){
     return mConStr0([
+        stringToHex(campaignId),
         creatorPubKeyHash,
         stringToHex(title),
         stringToHex(description),
@@ -44,6 +46,7 @@ export function createCampaignDatum(
 }
 
 export function createUpdatedCampaignDatum(
+  campaignId: string,
   creatorPubKeyHash: string,
   title: string,
   description: string,
@@ -54,6 +57,7 @@ export function createUpdatedCampaignDatum(
   status: CampaignStatus
 ) {
   return createCampaignDatum(
+    campaignId,
     creatorPubKeyHash,
     title,
     description,

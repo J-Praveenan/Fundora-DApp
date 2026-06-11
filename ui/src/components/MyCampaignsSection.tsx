@@ -45,7 +45,7 @@ export default function MyCampaignsSection() {
 
   const fetchMyCampaigns = async () => {
     if (!connected) {
-      showWarningToast("Please connect your wallet first");
+      showErrorToast("Please connect your wallet first");
       return;
     }
 
@@ -147,7 +147,7 @@ export default function MyCampaignsSection() {
 
               return (
                 <motion.div
-                  key={campaign.id}
+                  key={campaign.campaignId}
                   initial={{ opacity: 0, y: 35 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
