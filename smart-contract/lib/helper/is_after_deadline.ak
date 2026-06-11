@@ -6,8 +6,5 @@ pub fn is_after_deadline(
   deadline: Int,
 ) -> Bool {
 
-  interval.contains(
-    self.validity_range,
-    deadline,
-  )
+  interval.is_entirely_after(self.validity_range, deadline)
 }

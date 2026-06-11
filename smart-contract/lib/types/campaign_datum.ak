@@ -8,6 +8,7 @@ pub type CampaignStatus {
 }
 
 pub type CampaignDatum {
+  campaign_id: ByteArray,
   creator: VerificationKeyHash,
   title: ByteArray,
   description: ByteArray,
