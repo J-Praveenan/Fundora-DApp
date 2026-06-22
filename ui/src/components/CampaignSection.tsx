@@ -21,6 +21,7 @@ import {
   Campaign,
 } from "@/utils/decodeCampaignDatum";
 import WithdrawModal from "./WithdrawModal";
+import MarkFailedModal from "./MarkFailedModal";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -34,6 +35,7 @@ export default function CampaignSection() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [withdrawCampaign, setWithdrawCampaign] = useState<Campaign | null>(null);
+  const [failedCampaign, setFailedCampaign] = useState<Campaign | null>(null);
 
   const totalPages = Math.ceil(campaigns.length / ITEMS_PER_PAGE);
 
@@ -219,10 +221,23 @@ export default function CampaignSection() {
 
                       <div className="mt-5 flex gap-3">
                         <button
-                          onClick={() => setContributeCampaign(campaign)}
-                          className="flex-1 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:scale-[1.02]"
+                          disabled={campaign.status !== "Active"}
+                          onClick={() => {
+                            if (campaign.status === "Active") {
+                              setSelectedCampaign(campaign);
+                            }
+                          }}
+                          className={`flex-1 rounded-2xl py-3 font-bold transition ${
+                            campaign.status === "Active"
+                              ? "bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 hover:opacity-90"
+                              : "cursor-not-allowed bg-slate-800 text-slate-500"
+                          }`}
                         >
-                          Contribute
+                          {campaign.status === "Successful"
+                            ? "Funding Completed"
+                            : campaign.status === "Failed"
+                            ? "Campaign Failed"
+                            : "Contribute"}
                         </button>
 
                         <button
@@ -240,6 +255,17 @@ export default function CampaignSection() {
                           Withdraw
                         </button>
                       )}
+                      {campaign.status === "Active" &&
+                      campaign.raised < campaign.goal &&
+                      Date.now() >= new Date(campaign.deadline).getTime() && (
+                        <button
+                          onClick={() => setFailedCampaign(campaign)}
+                          className="mt-3 w-full rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-2.5 text-sm font-bold text-red-300 transition hover:bg-red-400/20"
+                        >
+                          Mark Failed
+                        </button>
+                      )}
+                      
                     </div>
                   </motion.div>
                 );
@@ -284,6 +310,10 @@ export default function CampaignSection() {
       <CampaignDetailsModal
         campaign={selectedCampaign}
         onClose={() => setSelectedCampaign(null)}
+        onContribute={(campaign) => {
+          setSelectedCampaign(null);
+          setContributeCampaign(campaign);
+        }}
       />
 
       <ContributeModal
@@ -294,6 +324,11 @@ export default function CampaignSection() {
       <WithdrawModal
         campaign={withdrawCampaign}
         onClose={() => setWithdrawCampaign(null)}
+      />
+
+      <MarkFailedModal
+        campaign={failedCampaign}
+        onClose={() => setFailedCampaign(null)}
       />
     </section>
   );

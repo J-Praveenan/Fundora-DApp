@@ -32,17 +32,19 @@ export function createCampaignDatum(
     deadline: number,
     status: CampaignStatus,
 ){
-    return mConStr0([
-        stringToHex(campaignId),
-        creatorPubKeyHash,
-        stringToHex(title),
-        stringToHex(description),
-        stringToHex(imageUrl),
-        targetAmount,
-        raisedAmount,
-        deadline,
-        statusToDatum(status)
-    ]);
+    const campaignDatum = mConStr0([
+    stringToHex(campaignId),
+    creatorPubKeyHash,
+    stringToHex(title),
+    stringToHex(description),
+    stringToHex(imageUrl),
+    targetAmount,
+    raisedAmount,
+    deadline,
+    statusToDatum(status),
+  ]);
+
+  return mConStr0([campaignDatum]);
 }
 
 export function createUpdatedCampaignDatum(

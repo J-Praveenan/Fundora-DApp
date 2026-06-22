@@ -22,6 +22,7 @@ import {
   showSuccessToast,
   showWarningToast,
 } from "@/utils/toast";
+import { handleWalletError } from "@/utils/walletError";
 
 
 export default function CreateCampaignSection() {
@@ -133,9 +134,17 @@ export default function CreateCampaignSection() {
       showSuccessToast("Compaign created successfully.");
     } catch (error) {
       console.log("Error in creating campaign: ", error);
-      showErrorToast("Error in creating campign");
+      handleWalletError(error);
     }finally{
       setLoading(false);
+      setFormData({
+        title: "",
+        description: "",
+        goal: "",
+        deadline: "",
+      });
+      setPreviewImage(null);
+      setOpen(false);
     }
 
   }

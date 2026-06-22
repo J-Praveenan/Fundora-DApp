@@ -1,15 +1,35 @@
 use aiken/collection/list
-use cardano/transaction.{Transaction, InlineDatum}
+use cardano/transaction.{InlineDatum, Output, Transaction}
 use types/campaign_datum.{Active, CampaignDatum, Successful}
+use types/crowdfunding_datum.{Campaign, CrowdfundingDatum}
+
+fn is_campaign_output(output: Output) -> Bool {
+  when output.datum is {
+    InlineDatum(raw) -> {
+      expect typed_datum: CrowdfundingDatum = raw
+
+      when typed_datum is {
+        Campaign(_) -> True
+        _ -> False
+      }
+    }
+
+    _ -> False
+  }
+}
 
 pub fn validate_contribute(
   d: CampaignDatum,
   amount: Int,
   self: Transaction,
 ) -> Bool {
-  expect Some(output) = list.head(self.outputs)
+  let campaign_outputs =
+    list.filter(self.outputs, is_campaign_output)
+
+  expect Some(output) = list.head(campaign_outputs)
   expect InlineDatum(raw) = output.datum
-  expect new_datum: CampaignDatum = raw
+  expect typed_datum: CrowdfundingDatum = raw
+  expect Campaign(new_datum) = typed_datum
 
   let valid_old_status =
     d.status == Active
@@ -27,5 +47,11 @@ pub fn validate_contribute(
       new_datum.status == Active
     }
 
-  valid_old_status && valid_amount && raised_correct && status_correct
+  and {
+    valid_old_status,
+    valid_amount,
+    raised_correct,
+    status_correct,
+  }
+  
 }

@@ -40,11 +40,22 @@ export function decodeCampaignDatum(utxo: any): Campaign | null {
   try {
     if (!utxo.output?.plutusData) return null;
 
-    const datum: any = deserializeDatum(utxo.output.plutusData);
-    const fields = datum.fields;
+    const wrapper: any = deserializeDatum(utxo.output.plutusData);
 
-    // CampaignDatum has 9 fields.
-    // ContributionDatum has only 3 fields, so ignore it here.
+    const wrapperConstructor = Number(
+      wrapper?.constructor ??
+        wrapper?.alternative ??
+        wrapper?.index ??
+        wrapper?.constructorIndex ??
+        wrapper?.constr ??
+        0
+    );
+
+    if (wrapperConstructor !== 0) return null;
+
+    const campaignDatum = wrapper.fields?.[0];
+    const fields = campaignDatum?.fields;
+
     if (!fields || fields.length !== 9) return null;
 
     const goal = Number(fields[5].int) / 1_000_000;

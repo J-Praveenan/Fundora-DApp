@@ -13,8 +13,21 @@ export function decodeContributionDatum(utxo: any): Contribution | null {
   try {
     if (!utxo.output?.plutusData) return null;
 
-    const datum: any = deserializeDatum(utxo.output.plutusData);
-    const fields = datum.fields;
+    const wrapper: any = deserializeDatum(utxo.output.plutusData);
+
+    const wrapperConstructor = Number(
+      wrapper?.constructor ??
+        wrapper?.alternative ??
+        wrapper?.index ??
+        wrapper?.constructorIndex ??
+        wrapper?.constr ??
+        0
+    );
+
+    if (wrapperConstructor !== 1) return null;
+
+    const contributionDatum = wrapper.fields?.[0];
+    const fields = contributionDatum?.fields;
 
     if (!fields || fields.length !== 3) return null;
 

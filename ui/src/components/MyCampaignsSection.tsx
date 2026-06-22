@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useWallet } from "@meshsdk/react";
+import { CardanoWallet, useWallet } from "@meshsdk/react";
 import { deserializeAddress } from "@meshsdk/core";
 
 import { provider } from "@/config/mesh";
@@ -28,6 +28,7 @@ import {
 import CampaignDetailsModal from "./CampaignDetailsModal";
 import ContributeModal from "./ContributeModal";
 import WithdrawModal from "./WithdrawModal";
+import { handleWalletError } from "@/utils/walletError";
 
 export default function MyCampaignsSection() {
   const { connected, wallet } = useWallet();
@@ -69,7 +70,7 @@ export default function MyCampaignsSection() {
       setCampaigns(myCampaigns);
     } catch (error) {
       console.error("Failed to fetch my campaigns:", error);
-      showErrorToast("Failed to load your campaigns");
+      handleWalletError(error);
     } finally {
       setLoading(false);
     }
@@ -116,13 +117,22 @@ export default function MyCampaignsSection() {
 
         {!hasLoaded && (
           <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.04] p-10 text-center backdrop-blur-xl">
-            <ShieldCheck className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-400">
+              <ShieldCheck size={34} />
+            </div>
+
             <h3 className="text-2xl font-bold text-white">
               Your campaigns are not loaded yet
             </h3>
-            <p className="mt-3 text-slate-400">
-              Connect your wallet and click Load My Campaigns.
+
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">
+              Connect your Cardano wallet first, then click Load My Campaigns to view
+              campaigns created by your wallet.
             </p>
+
+            <div className="mt-6 flex justify-center">
+              <CardanoWallet label="Connect Wallet" isDark={false} persist={true} />
+            </div>
           </div>
         )}
 
@@ -260,6 +270,10 @@ export default function MyCampaignsSection() {
       <CampaignDetailsModal
         campaign={selectedCampaign}
         onClose={() => setSelectedCampaign(null)}
+        onContribute={(campaign) => {
+          setSelectedCampaign(null);
+          setContributeCampaign(campaign);
+        }}
       />
 
       <ContributeModal

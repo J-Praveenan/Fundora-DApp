@@ -6,8 +6,7 @@ import { motion } from "framer-motion";
 import { Campaign } from "@/utils/decodeCampaignDatum";
 import { useWallet } from "@meshsdk/react";
 import { CampaignStatus, createCampaignDatum } from "@/utils/campaignDatum";
-import { mConStr0, deserializeAddress  } from "@meshsdk/core";
-import { txBuilder } from "@/config/mesh";
+import { mConStr0, deserializeAddress, MeshTxBuilder  } from "@meshsdk/core";
 import { script, scriptAddress } from "@/config/contract";
 import {
   showErrorToast,
@@ -15,6 +14,8 @@ import {
   showWarningToast,
 } from "@/utils/toast";
 import { createContributionDatum } from "@/utils/contributionDatum";
+import { handleWalletError } from "@/utils/walletError";
+import { provider } from "@/config/mesh";
 
 type ContributeModalProps = {
   campaign: Campaign | null;
@@ -98,6 +99,12 @@ export default function ContributeModal({
       const oldScriptAmount = campaign.raised * 1_000_000 + 5_000_000;
       const newScriptAmount = oldScriptAmount + contributionLovelace;
 
+      const txBuilder = new MeshTxBuilder({
+        fetcher: provider,
+        submitter: provider,
+        verbose: true,
+      });
+
       const unsignedTx = await txBuilder
         .spendingPlutusScript("V3")
         .txIn(
@@ -148,11 +155,22 @@ export default function ContributeModal({
 
       setTxHash(submittedTxHash);
       showSuccessToast("Contribution successful!");
+
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+
+      setTimeout(() => {
+        onClose();
+         window.location.reload();
+      }, 3000);
+  
     } catch (error) {
       console.error("Contribution failed:", error);
-      showErrorToast("Contribution failed. Check console.");
+      handleWalletError(error);
     } finally {
       setLoading(false);
+      setAmount("");
     }
   };
 
@@ -242,15 +260,6 @@ export default function ContributeModal({
             <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-400">
               ADA
             </span>
-          </div>
-
-          <div className="mt-4 flex items-start gap-2 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4 text-sm text-slate-300">
-            <Info size={18} className="mt-0.5 shrink-0 text-cyan-400" />
-            <p>
-              This is currently a frontend-only modal. Later this button will
-              call the MeshJS transaction to lock ADA at the campaign script
-              address.
-            </p>
           </div>
 
           <button

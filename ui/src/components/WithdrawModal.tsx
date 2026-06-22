@@ -106,9 +106,14 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
 
       setTxHash(submittedTxHash);
       showSuccessToast("Withdraw successful!");
+
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+
     } catch (error) {
       console.error("Withdraw failed:", error);
-      showErrorToast("Withdraw failed. Check console.");
+      showErrorToast("Withdraw failed.");
     } finally {
       setLoading(false);
     }
@@ -150,8 +155,7 @@ export default function WithdrawModal({ campaign, onClose }: Props) {
         <div className="mt-4 flex gap-2 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-sm text-yellow-200">
           <AlertCircle size={18} className="shrink-0" />
           <p>
-            Your smart contract allows withdraw only if the campaign is
-            successful and the deadline has passed.
+            Congratulations! This campaign has been fully funded. The raised funds are ready to be withdrawn.
           </p>
         </div>
 

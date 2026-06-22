@@ -15,5 +15,11 @@ pub fn validate_withdraw(
   let valid_status =
     d.status == Successful
 
-  signed && target_reached && valid_status
+  and{
+    signed,
+    target_reached,
+    valid_status,
+  }
+
+  
 }
