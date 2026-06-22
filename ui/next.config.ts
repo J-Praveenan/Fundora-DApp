@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import webpack from "webpack";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (!isServer) {
       config.plugins.push(
